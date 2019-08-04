@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<script src='https://d3js.org/d3.v5.min.js'></script>
+<style> circle {fill: lightblue; stroke: black;} </style>
+<body onload='init()'>
+    <h1>Career Analysis of NBA Players</h1>
+    <svg width=300 height=300>
+    </svg>
+    <script>
+    async function init() {
+        const data = await d3.csv("players.csv");
+
+        var x = d3.scaleLog().domain([10,150]).range([0,200])
+        var y = d3.scaleLog().domain([10,150]).range([200,0])
+        
+        var svg = d3.select('svg')
+
+        var g1 = svg.append('g')
+            .attr('transform', 'translate(50,50)')
+        circle = g1.selectAll('circle')
+            .data(data)
+            .enter()
+            .append('circle')
+                .attr('x', function(d,i) { return d.draft_year; })
+                .attr('y', function(d,i) { return +d.career_PTS; })
+                .attr('r', function(d,i) { return +d.career_PTS; })
+
+        var g2 = svg.append('g')
+            .attr('transform', 'translate(50,50)')
+            .call(d3.axisLeft(y).tickValues([10,20,50,100]).tickFormat(d3.format("~s")))
+            .attr('fill', 'none')
+            .attr('font-size', '10')
+            .attr('font-family', 'sans-serif')
+            .attr('text-anchor', 'end')
+        g2.select('svg').filter('g')
+            .append('path')
+                .attr('class', 'domain')
+                .attr('stroke', 'currentColor')
+                .attr('d', 'M-6,200.5H0.5V0.5H-6')
+        g2.selectAll('g')
+            .data([10,20,50,100])
+            .enter()
+            .append('g')
+                .attr('class', 'tick')
+                .attr('opacity', '1')
+                .attr('transform', 'translate(0,' + 0 + ')')
+            .append('line')
+                .attr('stroke', 'currentColor')
+                .attr('x2', -6)
+            .append('text')
+                .attr('fill', 'currentColor')
+                .attr('x', -9)
+                .attr('dy', '0.32em')
+
+        var g3 = svg.append('g')
+            .attr('transform', 'translate(50,250)')
+            .call(d3.axisBottom(x).tickValues([10,20,50,100]).tickFormat(d3.format("~s")))
+            .attr('fill', 'none')
+            .attr('font-size', '10')
+            .attr('font-family', 'sans-serif')
+            .attr('text-anchor', 'middle')
+        g3.select('svg').filter('g')
+            .append('path')
+                .attr('class', 'domain')
+                .attr('stroke', 'currentColor')
+                .attr('d', 'M0.5,6V0.5H200.5V6')
+        g3.selectAll('g')
+            .data([10,20,50,100])
+            .enter()
+            .append('g')
+                .attr('class', 'tick')
+                .attr('opacity', '1')
+                .attr('transform', 'translate(' + 0 + ',0)')
+            .append('line')
+                .attr('stroke', 'currentColor')
+                .attr('y2', -6)
+            .append('text')
+                .attr('fill', 'currentColor')
+                .attr('y', -9)
+                .attr('dy', '0.71em')
+    }
+    </script>
+</body>
+</html>
