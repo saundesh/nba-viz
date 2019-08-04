@@ -4,81 +4,65 @@
 <script src='https://d3js.org/d3.v5.min.js'></script>
 <style> circle {fill: lightblue; stroke: black;} </style>
 <body onload='init()'>
-    <h1>Career Analysis of NBA Players</h1>
-    <svg width=300 height=300>
+    <h1 style="font-family:sans-serif;text-align:left">Career Analysis of NBA Players</h1>
+    <svg width=750 height=500>
     </svg>
     <script>
     async function init() {
-        const data = await d3.csv("players.csv");
+        const data = await d3.csv("https://shuan102.github.io/players.csv");
 
-        var x = d3.scaleLog().domain([10,150]).range([0,200])
-        var y = d3.scaleLog().domain([10,150]).range([200,0])
+        var x = d3.scaleLinear().domain([1947,2018]).range([0,650])
+        var y = d3.scaleLinear().domain([10,150]).range([400,0])
         
         var svg = d3.select('svg')
 
-        var g1 = svg.append('g')
+        // var Tooltip = d3.select("#my_dataviz")
+        //     .append("div")
+        //     .style("opacity", 0)
+        //     .attr("class", "tooltip")
+        //     .style("background-color", "white")
+        //     //.style("border", "solid")
+        //     //.style("border-width", "2px")
+        //     .style("border-radius", "5px")
+        //     .style("padding", "5px")
+
+        // // Three function that change the tooltip when user hover / move / leave a cell
+        // var mouseover = function(d) {
+        //     Tooltip
+        //         .style("opacity", 1)
+        // }
+        // var mousemove = function(d) {
+        //     Tooltip
+        //         .html("Pokemon Generation " + d.type + "<br>"+"Attribute Mean: " + d.value)
+        //         .style("left", (d3.mouse(this)[0]+70) + "px")
+        //         .style("top", (d3.mouse(this)[1]) + "px")
+        // }
+        // var mouseleave = function(d) {
+        //     Tooltip
+        //         .style("opacity", 0)
+        // }
+
+        var g = svg.append('g')
             .attr('transform', 'translate(50,50)')
-        circle = g1.selectAll('circle')
+        circle = g.selectAll('circle')
             .data(data)
             .enter()
             .append('circle')
-                .attr('x', function(d,i) { return d.draft_year; })
-                .attr('y', function(d,i) { return +d.career_PTS; })
-                .attr('r', function(d,i) { return +d.career_PTS; })
+                .attr('cx', function(d,i) { return +d.draft_year; })
+                .attr('cy', function(d,i) { return +d.career_PTS; })
+                .attr('r', function(d,i) { return 5; })
+                .attr("fill", "white")
+                // .on("mouseover", mouseover)
+                // .on("mousemove", mousemove)
+                // .on("mouseleave", mouseleave)
 
-        var g2 = svg.append('g')
+        var xaxis = svg.append('g')
             .attr('transform', 'translate(50,50)')
-            .call(d3.axisLeft(y).tickValues([10,20,50,100]).tickFormat(d3.format("~s")))
-            .attr('fill', 'none')
-            .attr('font-size', '10')
-            .attr('font-family', 'sans-serif')
-            .attr('text-anchor', 'end')
-        g2.select('svg').filter('g')
-            .append('path')
-                .attr('class', 'domain')
-                .attr('stroke', 'currentColor')
-                .attr('d', 'M-6,200.5H0.5V0.5H-6')
-        g2.selectAll('g')
-            .data([10,20,50,100])
-            .enter()
-            .append('g')
-                .attr('class', 'tick')
-                .attr('opacity', '1')
-                .attr('transform', 'translate(0,' + 0 + ')')
-            .append('line')
-                .attr('stroke', 'currentColor')
-                .attr('x2', -6)
-            .append('text')
-                .attr('fill', 'currentColor')
-                .attr('x', -9)
-                .attr('dy', '0.32em')
+            .call(d3.axisLeft(y))
 
-        var g3 = svg.append('g')
-            .attr('transform', 'translate(50,250)')
-            .call(d3.axisBottom(x).tickValues([10,20,50,100]).tickFormat(d3.format("~s")))
-            .attr('fill', 'none')
-            .attr('font-size', '10')
-            .attr('font-family', 'sans-serif')
-            .attr('text-anchor', 'middle')
-        g3.select('svg').filter('g')
-            .append('path')
-                .attr('class', 'domain')
-                .attr('stroke', 'currentColor')
-                .attr('d', 'M0.5,6V0.5H200.5V6')
-        g3.selectAll('g')
-            .data([10,20,50,100])
-            .enter()
-            .append('g')
-                .attr('class', 'tick')
-                .attr('opacity', '1')
-                .attr('transform', 'translate(' + 0 + ',0)')
-            .append('line')
-                .attr('stroke', 'currentColor')
-                .attr('y2', -6)
-            .append('text')
-                .attr('fill', 'currentColor')
-                .attr('y', -9)
-                .attr('dy', '0.71em')
+        var yaxis = svg.append('g')
+            .attr('transform', 'translate(50,450)')
+            .call(d3.axisBottom(x))
     }
     </script>
 </body>
