@@ -10,7 +10,7 @@
     <h2 style="font-family:sans-serif; text-align:center; font-size:20px;">Career Statistics of NBA Players in Each Draft Year</h2>
     <p style="font-family:sans-serif; text-align:center; font-size:12px;">How have NBA players' career statistics changed over the years?</p>
     <div class="row">
-        <div class="button" id="back">&lt;</div>
+        <div class="button" id="back" style="visibility: hidden;">&lt;</div>
         <div class="button" id="forward">&gt;</div>
     </div>
     <div id="graph_container">
@@ -65,7 +65,7 @@
         event.preventDefault();
         if(graph_index > 0) {
             graph_index--;
-            update_svg();
+            update();
         }
     }
 
@@ -73,7 +73,7 @@
         event.preventDefault();
         if(graph_index < Object.keys(settings).length) {
             graph_index++;
-            update_svg();
+            update();
         }
     }
 
@@ -81,18 +81,28 @@
         data = await d3.csv("https://shuan102.github.io/players-clean.csv");
         document.getElementById('back').addEventListener('click', goback)
         document.getElementById('forward').addEventListener('click', goforward)
-        update_svg()
-    }
-
-    function update_svg() {
-        document.getElementById('graph_container').innerHTML="<svg width=1000 height=700></svg>";
-
         document.onkeydown = function(e) {
             if (e.keyCode == 37) {
                 goback(e);
             } else if (e.keyCode == 39) {
                 goforward(e);
             }
+        }
+        update()
+    }
+
+    function update() {
+        document.getElementById('graph_container').innerHTML="<svg width=1000 height=700></svg>";
+        if (graph_index == 0) {
+            document.getElementById('back').style.visibility = "hidden";
+        } else {
+            document.getElementById('back').style.visibility = "visible";
+        }
+
+        if (graph_index == Object.keys(settings).length) {
+            document.getElementById('forward').style.visibility = "hidden";
+        } else {
+            document.getElementById('forward').style.visibility = "visible";
         }
 
         if (graph_index == 0) {
