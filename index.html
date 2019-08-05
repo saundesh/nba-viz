@@ -19,8 +19,46 @@
 
     <script>
     
-    const graph_functions = [career_avg, career_pts, career_ast, career_trb, career_fg, career_fg3, career_ft]
-    const color_functions = ['', 'lightblue', 'lightgreen', 'lightpink', 'khaki', 'sandybrown', 'plum']
+    let settings = {
+        'cpt': {
+            'color': 'lightblue', 
+            'ydomain': [-0.2,30.5],
+            'col': 'career_PTS',
+            'text': 'Career Points'
+        },
+        'cast': {
+            'color': 'lightgreen',
+            'ydomain': [-0.1,11.5],
+            'col': 'career_AST',
+            'text': 'Career Assists'
+        },
+        'crb': {
+            'color': 'lightpink',
+            'ydomain': [-0.2,15.2],
+            'col': 'career_TRB',
+            'text': 'Career Rebounds'
+        },
+        'cfg': {
+            'color': 'khaki',
+            'ydomain': [-1,101],
+            'col': 'career_FG%',
+            'text': 'Career FG%'
+        },
+        'cfg3': {
+            'color': 'sandybrown',
+            'ydomain': [-1,101],
+            'col': 'career_FG3%',
+            'text': 'Career FG3%'
+        },
+        'cft': {
+            'color': 'plum',
+            'ydomain': [-1,101],
+            'col': 'career_FT%',
+            'text': 'Career FT%'
+        }
+    }
+
+    // const graph_functions = [career_avg, career_pts, career_ast, career_trb, career_fg, career_fg3, career_ft]
     let data;
     let graph_index = 0;
 
@@ -37,7 +75,7 @@
 
         document.getElementById('forward').addEventListener('click', function(event) {
             event.preventDefault();
-            if(graph_index < graph_functions.length - 1) {
+            if(graph_index < Object.keys(settings).length) {
                 graph_index++;
                 update_svg();
             }
@@ -48,7 +86,11 @@
 
     function update_svg() {
         document.getElementById('graph_container').innerHTML="<svg width=1000 height=700></svg>";
-        graph_functions[graph_index]();
+        if (graph_index == 0) {
+            career_avg()
+        } else {
+            draw_graph(Object.keys(settings)[graph_index-1])
+        }
     }
 
     function career_avg() {
@@ -83,29 +125,11 @@
             })
         }
 
-        let colors = {
-            'cpt': 'lightblue', 
-            'cast': 'lightgreen',
-            'crb': 'lightpink',
-            'cfg': 'khaki',
-            'cfg3': 'sandybrown',
-            'cft': 'plum'
-        }
-
-        let texts = {
-            'cpt': ' Points', 
-            'cast': ' Assists',
-            'crb': ' Rebounds',
-            'cfg': ' FG%',
-            'cfg3': ' FG3%',
-            'cft': ' FT%'
-        }
-
         let div = d3.select('#tooltip')
             .attr('class', 'tooltip')
             .style('opacity', 0)
             
-        Object.keys(colors).forEach(function(type) {
+        Object.keys(settings).forEach(function(type) {
             let g = svg.append('g')
                 .attr('transform', 'translate(50,0)')
 
@@ -119,7 +143,7 @@
                 .attr('d', line)
                 .style('stroke-width', 2)
                 .style('fill', 'none')
-                .style('stroke', colors[type])
+                .style('stroke', settings[type].color)
                 
             let circle = g.selectAll('circle')
                 .data(averages)
@@ -128,13 +152,13 @@
                     .attr('cx', function(d,i) { return xScale(d.year); })
                     .attr('cy', function(d,i) { return yScale(d[type]); })
                     .attr('r', function(d,i) { return 3; })
-                    .attr('fill', colors[type])
+                    .attr('fill', settings[type].color)
                     .on("mouseover", function(d,i) {
                         div.style('opacity', 0.9)
                             .style('left', (d3.mouse(this)[0]+60) + 'px')
                             .style('top', (d3.mouse(this)[1]+15) + 'px')
-                            .style('background-color', colors[type])
-                            .html('Year: ' + d.year + '<br>' + 'Average ' + texts[type] + ": " + d[type])
+                            .style('background-color', settings[type].color)
+                            .html('Year: ' + d.year + '<br>' + 'Average ' + settings[type].text + ": " + d[type])
                     })
                     .on("mouseleave", function(d,i) {
                         div.style('opacity', 0)
@@ -166,16 +190,16 @@
             .text('Career Averages');
     }
 
-    function career_pts() {
+    function draw_graph(key) {
         var x = d3.scaleLinear().domain([1957,2019]).range([0,900])
-        var y = d3.scaleLinear().domain([-0.2,30.5]).range([650,0])
+        var y = d3.scaleLinear().domain(settings[key].ydomain).range([650,0])
         
         var svg = d3.select('svg')
         
         var div = d3.select('#tooltip')
             .attr('class', 'tooltip')
             .style('opacity', 0)
-            .style('background-color', color_functions[graph_index]);
+            .style('background-color', settings[key].color);
 
         var g = svg.append('g')
             .attr('transform', 'translate(50,0)')
@@ -185,14 +209,14 @@
             .enter()
             .append('circle')
                 .attr('cx', function(d,i) { return +x(d.draft_year); })
-                .attr('cy', function(d,i) { return +y(d.career_PTS); })
+                .attr('cy', function(d,i) { return +y(d[settings[key].col]); })
                 .attr('r', function(d,i) { return 3; })
-                .attr('fill', color_functions[graph_index])
+                .attr('fill', settings[key].color)
                 .on("mouseover", function(d,i) {
                     div.style('opacity', 0.9)
                         .style('left', (d3.mouse(this)[0]+60) + 'px')
                         .style('top', (d3.mouse(this)[1]+15) + 'px')
-                        .html('Player: ' + d.name + '<br>' + 'Position: ' + d.position + '<br>' + 'Draft Year: ' + d.draft_year + '<br>' + 'Career Points: ' + d.career_PTS)
+                        .html(`Player: ${d.name}<br>Position: ${d.position}<br>Draft Year: ${d.draft_year}<br>${settings[key].text}: ${d[settings[key].col]}`)
                 })
                 .on("mouseleave", function(d,i) {
                     div.style('opacity', 0)
@@ -220,293 +244,7 @@
             .style('text-anchor', 'middle')
             .style('font-family', 'sans-serif')
             .style('font-size', '12')
-            .text('Career Points');
+            .text(settings[key].text);
     }
-
-    function career_ast() {
-        var x = d3.scaleLinear().domain([1957,2019]).range([0,900])
-        var y = d3.scaleLinear().domain([-0.1,11.5]).range([650,0])
-        
-        var svg = d3.select('svg')
-        
-        var div = d3.select('#tooltip')
-            .attr('class', 'tooltip')
-            .style('opacity', 0)
-            .style('background-color', color_functions[graph_index]);
-
-        var g = svg.append('g')
-            .attr('transform', 'translate(50,0)')
-            
-        circle = g.selectAll('circle')
-            .data(data)
-            .enter()
-            .append('circle')
-                .attr('cx', function(d,i) { return +x(d.draft_year); })
-                .attr('cy', function(d,i) { return +y(d.career_AST); })
-                .attr('r', function(d,i) { return 3; })
-                .attr('fill', color_functions[graph_index])
-                .on("mouseover", function(d,i) {
-                    div.style('opacity', 0.9)
-                        .style('left', (d3.mouse(this)[0]+60) + 'px')
-                        .style('top', (d3.mouse(this)[1]+15) + 'px')
-                        .html('Player: ' + d.name + '<br>' + 'Position: ' + d.position + '<br>' + 'Draft Year: ' + d.draft_year + '<br>' + 'Career Assists: ' + d.career_AST)
-                })
-                .on("mouseleave", function(d,i) {
-                    div.style('opacity', 0)
-                })
-
-        var xaxis = svg.append('g')
-            .attr('transform', 'translate(50,0)')
-            .call(d3.axisLeft(y).tickFormat(d3.format("d")))
-
-        svg.append('text')             
-            .attr('transform', 'translate(500,690)')
-            .style('text-anchor', 'middle')
-            .style('font-family', 'sans-serif')
-            .style('font-size', '12')
-            .text('Draft Year');
-
-        var yaxis = svg.append('g')
-            .attr('transform', 'translate(50,650)')
-            .call(d3.axisBottom(x).tickFormat(d3.format("d")))
-
-        svg.append('text')  
-            .attr('x', -325)           
-            .attr('y', 15)
-            .attr('transform', 'rotate(-90)')
-            .style('text-anchor', 'middle')
-            .style('font-family', 'sans-serif')
-            .style('font-size', '12')
-            .text('Career Assists');
-    }
-
-    function career_trb() {
-        var x = d3.scaleLinear().domain([1957,2019]).range([0,900])
-        var y = d3.scaleLinear().domain([-0.2,15.2]).range([650,0])
-        
-        var svg = d3.select('svg')
-        
-        var div = d3.select('#tooltip')
-            .attr('class', 'tooltip')
-            .style('opacity', 0)
-            .style('background-color', color_functions[graph_index]);
-
-        var g = svg.append('g')
-            .attr('transform', 'translate(50,0)')
-            
-        circle = g.selectAll('circle')
-            .data(data)
-            .enter()
-            .append('circle')
-                .attr('cx', function(d,i) { return +x(d.draft_year); })
-                .attr('cy', function(d,i) { return +y(d.career_TRB); })
-                .attr('r', function(d,i) { return 3; })
-                .attr('fill', color_functions[graph_index])
-                .on("mouseover", function(d,i) {
-                    div.style('opacity', 0.9)
-                        .style('left', (d3.mouse(this)[0]+60) + 'px')
-                        .style('top', (d3.mouse(this)[1]+15) + 'px')
-                        .html('Player: ' + d.name + '<br>' + 'Position: ' + d.position + '<br>' + 'Draft Year: ' + d.draft_year + '<br>' + 'Career Rebound: ' + d.career_TRB)
-                })
-                .on("mouseleave", function(d,i) {
-                    div.style('opacity', 0)
-                })
-
-        var xaxis = svg.append('g')
-            .attr('transform', 'translate(50,0)')
-            .call(d3.axisLeft(y).tickFormat(d3.format("d")))
-
-        svg.append('text')             
-            .attr('transform', 'translate(500,690)')
-            .style('text-anchor', 'middle')
-            .style('font-family', 'sans-serif')
-            .style('font-size', '12')
-            .text('Draft Year');
-
-        var yaxis = svg.append('g')
-            .attr('transform', 'translate(50,650)')
-            .call(d3.axisBottom(x).tickFormat(d3.format("d")))
-
-        svg.append('text')  
-            .attr('x', -325)           
-            .attr('y', 15)
-            .attr('transform', 'rotate(-90)')
-            .style('text-anchor', 'middle')
-            .style('font-family', 'sans-serif')
-            .style('font-size', '12')
-            .text('Career Rebound');
-    }
-
-    function career_fg() {
-        var x = d3.scaleLinear().domain([1957,2019]).range([0,900])
-        var y = d3.scaleLinear().domain([-1,101]).range([650,0])
-        
-        var svg = d3.select('svg')
-        
-        var div = d3.select('#tooltip')
-            .attr('class', 'tooltip')
-            .style('opacity', 0)
-            .style('background-color', color_functions[graph_index]);
-
-        var g = svg.append('g')
-            .attr('transform', 'translate(50,0)')
-            
-        circle = g.selectAll('circle')
-            .data(data)
-            .enter()
-            .append('circle')
-                .attr('cx', function(d,i) { return +x(d.draft_year); })
-                .attr('cy', function(d,i) { return +y(d["career_FG%"]); })
-                .attr('r', function(d,i) { return 3; })
-                .attr('fill', color_functions[graph_index])
-                .on("mouseover", function(d,i) {
-                    div.style('opacity', 0.9)
-                        .style('left', (d3.mouse(this)[0]+60) + 'px')
-                        .style('top', (d3.mouse(this)[1]+15) + 'px')
-                        .html('Player: ' + d.name + '<br>' + 'Position: ' + d.position + '<br>' + 'Draft Year: ' + d.draft_year + '<br>' + 'Career FG%: ' + d["career_FG%"])
-                })
-                .on("mouseleave", function(d,i) {
-                    div.style('opacity', 0)
-                })
-
-        var xaxis = svg.append('g')
-            .attr('transform', 'translate(50,0)')
-            .call(d3.axisLeft(y).tickFormat(d3.format("d")))
-
-        svg.append('text')             
-            .attr('transform', 'translate(500,690)')
-            .style('text-anchor', 'middle')
-            .style('font-family', 'sans-serif')
-            .style('font-size', '12')
-            .text('Draft Year');
-
-        var yaxis = svg.append('g')
-            .attr('transform', 'translate(50,650)')
-            .call(d3.axisBottom(x).tickFormat(d3.format("d")))
-
-        svg.append('text')  
-            .attr('x', -325)           
-            .attr('y', 15)
-            .attr('transform', 'rotate(-90)')
-            .style('text-anchor', 'middle')
-            .style('font-family', 'sans-serif')
-            .style('font-size', '12')
-            .text('Career FG%');
-    }
-
-    function career_fg3() {
-        var x = d3.scaleLinear().domain([1957,2019]).range([0,900])
-        var y = d3.scaleLinear().domain([-1,101]).range([650,0])
-        
-        var svg = d3.select('svg')
-        
-        var div = d3.select('#tooltip')
-            .attr('class', 'tooltip')
-            .style('opacity', 0)
-            .style('background-color', color_functions[graph_index]);
-
-        var g = svg.append('g')
-            .attr('transform', 'translate(50,0)')
-            
-        circle = g.selectAll('circle')
-            .data(data)
-            .enter()
-            .append('circle')
-                .attr('cx', function(d,i) { return +x(d.draft_year); })
-                .attr('cy', function(d,i) { return +y(d["career_FG3%"]); })
-                .attr('r', function(d,i) { return 3; })
-                .attr('fill', color_functions[graph_index])
-                .on("mouseover", function(d,i) {
-                    div.style('opacity', 0.9)
-                        .style('left', (d3.mouse(this)[0]+60) + 'px')
-                        .style('top', (d3.mouse(this)[1]+15) + 'px')
-                        .html('Player: ' + d.name + '<br>' + 'Position: ' + d.position + '<br>' + 'Draft Year: ' + d.draft_year + '<br>' + 'Career FG3%: ' + d["career_FG3%"])
-                })
-                .on("mouseleave", function(d,i) {
-                    div.style('opacity', 0)
-                })
-
-        var xaxis = svg.append('g')
-            .attr('transform', 'translate(50,0)')
-            .call(d3.axisLeft(y).tickFormat(d3.format("d")))
-
-        svg.append('text')             
-            .attr('transform', 'translate(500,690)')
-            .style('text-anchor', 'middle')
-            .style('font-family', 'sans-serif')
-            .style('font-size', '12')
-            .text('Draft Year');
-
-        var yaxis = svg.append('g')
-            .attr('transform', 'translate(50,650)')
-            .call(d3.axisBottom(x).tickFormat(d3.format("d")))
-
-        svg.append('text')  
-            .attr('x', -325)           
-            .attr('y', 15)
-            .attr('transform', 'rotate(-90)')
-            .style('text-anchor', 'middle')
-            .style('font-family', 'sans-serif')
-            .style('font-size', '12')
-            .text('Career FG3%');
-    }
-
-    function career_ft() {
-        var x = d3.scaleLinear().domain([1957,2019]).range([0,900])
-        var y = d3.scaleLinear().domain([-1,101]).range([650,0])
-        
-        var svg = d3.select('svg')
-        
-        var div = d3.select('#tooltip')
-            .attr('class', 'tooltip')
-            .style('opacity', 0)
-            .style('background-color', color_functions[graph_index]);
-
-        var g = svg.append('g')
-            .attr('transform', 'translate(50,0)')
-            
-        circle = g.selectAll('circle')
-            .data(data)
-            .enter()
-            .append('circle')
-                .attr('cx', function(d,i) { return +x(d.draft_year); })
-                .attr('cy', function(d,i) { return +y(d["career_FT%"]); })
-                .attr('r', function(d,i) { return 3; })
-                .attr('fill', color_functions[graph_index])
-                .on("mouseover", function(d,i) {
-                    div.style('opacity', 0.9)
-                        .style('left', (d3.mouse(this)[0]+60) + 'px')
-                        .style('top', (d3.mouse(this)[1]+15) + 'px')
-                        .html('Player: ' + d.name + '<br>' + 'Position: ' + d.position + '<br>' + 'Draft Year: ' + d.draft_year + '<br>' + 'Career FT%: ' + d["career_FT%"])
-                })
-                .on("mouseleave", function(d,i) {
-                    div.style('opacity', 0)
-                })
-
-        var xaxis = svg.append('g')
-            .attr('transform', 'translate(50,0)')
-            .call(d3.axisLeft(y).tickFormat(d3.format("d")))
-
-        svg.append('text')             
-            .attr('transform', 'translate(500,690)')
-            .style('text-anchor', 'middle')
-            .style('font-family', 'sans-serif')
-            .style('font-size', '12')
-            .text('Draft Year');
-
-        var yaxis = svg.append('g')
-            .attr('transform', 'translate(50,650)')
-            .call(d3.axisBottom(x).tickFormat(d3.format("d")))
-
-        svg.append('text')  
-            .attr('x', -325)           
-            .attr('y', 15)
-            .attr('transform', 'rotate(-90)')
-            .style('text-anchor', 'middle')
-            .style('font-family', 'sans-serif')
-            .style('font-size', '12')
-            .text('Career FT%');
-    }
-
     </script>
 </body>
