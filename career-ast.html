@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src='https://d3js.org/d3.v5.min.js'></script>
+
+<style>
+    circle {
+        fill: lightgreen;
+        stroke: lightgreen;
+    }
+    
+    div.tooltip {
+        position: absolute;
+        opacity: 0;
+        background-color: lightgreen;
+        border-radius: 3px;
+        padding: 5px;
+        font-family: sans-serif;
+        font-size: 10px;
+    }
+</style>
+
+<html>
+<body onload='init()'>
+    <h1 style="font-family:sans-serif; text-align:center;">Career Analysis of NBA Players</h1>
+    <svg width=1000 height=700></svg>
+    <div id='tooltip'></div>
+
+    <script>
+    async function init() {
+        const data = await d3.csv("https://shuan102.github.io/players-clean.csv");
+
+        var x = d3.scaleLinear().domain([1957,2019]).range([0,900])
+        var y = d3.scaleLinear().domain([-0.1,12.1]).range([650,0])
+        
+        var svg = d3.select('svg')
+        
+        var div = d3.select('#tooltip')
+            .attr('class', 'tooltip')
+            .style('opacity', 0);
+
+        var g = svg.append('g')
+            .attr('transform', 'translate(50,0)')
+            
+        circle = g.selectAll('circle')
+            .data(data)
+            .enter()
+            .append('circle')
+                .attr('cx', function(d,i) { return +x(d.draft_year); })
+                .attr('cy', function(d,i) { return +y(d.career_AST); })
+                .attr('r', function(d,i) { return 3; })
+                .attr('fill', 'black')
+                .on("mouseover", function(d,i) {
+                    div.style('opacity', 0.75)
+                        .style('left', (d3.mouse(this)[0]+60) + 'px')
+                        .style('top', (d3.mouse(this)[1]+15) + 'px')
+                        .html('Player: ' + d.name + '<br>' + 'Position: ' + d.position + '<br>' + 'Draft Year: ' + d.draft_year + '<br>' + 'Career Assists: ' + d.career_AST)
+                })
+                .on("mouseleave", function(d,i) {
+                    div.style('opacity', 0)
+                })
+
+        var xaxis = svg.append('g')
+            .attr('transform', 'translate(50,0)')
+            .call(d3.axisLeft(y).tickFormat(d3.format("d")))
+
+        svg.append('text')             
+            .attr('transform', 'translate(500,690)')
+            .style('text-anchor', 'middle')
+            .style('font-family', 'sans-serif')
+            .style('font-size', '12')
+            .text('Draft Year');
+
+        var yaxis = svg.append('g')
+            .attr('transform', 'translate(50,650)')
+            .call(d3.axisBottom(x).tickFormat(d3.format("d")))
+
+        svg.append('text')  
+            .attr('x', -325)           
+            .attr('y', 15)
+            .attr('transform', 'rotate(-90)')
+            .style('text-anchor', 'middle')
+            .style('font-family', 'sans-serif')
+            .style('font-size', '12')
+            .text('Career Assists');
+    }
+    </script>
+</body>
+</html>
