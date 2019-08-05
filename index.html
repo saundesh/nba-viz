@@ -58,34 +58,43 @@
         }
     }
 
-    // const graph_functions = [career_avg, career_pts, career_ast, career_trb, career_fg, career_fg3, career_ft]
     let data;
     let graph_index = 0;
 
+    function goback(event) {
+        event.preventDefault();
+        if(graph_index > 0) {
+            graph_index--;
+            update_svg();
+        }
+    }
+
+    function goforward(event) {
+        event.preventDefault();
+        if(graph_index < Object.keys(settings).length) {
+            graph_index++;
+            update_svg();
+        }
+    }
+
     async function init() {
         data = await d3.csv("https://shuan102.github.io/players-clean.csv");
-
-        document.getElementById('back').addEventListener('click', function(event) {
-            event.preventDefault();
-            if(graph_index > 0) {
-                graph_index--;
-                update_svg();
-            }
-        })
-
-        document.getElementById('forward').addEventListener('click', function(event) {
-            event.preventDefault();
-            if(graph_index < Object.keys(settings).length) {
-                graph_index++;
-                update_svg();
-            }
-        })
-
+        document.getElementById('back').addEventListener('click', goback)
+        document.getElementById('forward').addEventListener('click', goforward)
         update_svg()
     }
 
     function update_svg() {
         document.getElementById('graph_container').innerHTML="<svg width=1000 height=700></svg>";
+
+        document.onkeydown = function(e) {
+            if (e.keyCode == 37) {
+                goback(e);
+            } else if (e.keyCode == 39) {
+                goforward(e);
+            }
+        }
+
         if (graph_index == 0) {
             career_avg()
         } else {
@@ -94,7 +103,7 @@
     }
 
     function career_avg() {
-        var xScale = d3.scaleLinear().domain([1958,2018]).range([0,900])
+        var xScale = d3.scaleLinear().domain([1957,2019]).range([0,900])
         var yScale = d3.scaleLinear().domain([0,101]).range([650,0])
         
         var svg = d3.select('svg')
