@@ -1,68 +1,87 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<html>
 <script src='https://d3js.org/d3.v5.min.js'></script>
-<style> circle {fill: lightblue; stroke: black;} </style>
+
+<style>
+    circle {
+        fill: lightblue;
+        stroke: lightblue;
+    }
+    
+    div.tooltip {
+        position: absolute;
+        opacity: 0;
+        background-color: lightblue;
+        border-radius: 3px;
+        padding: 5px;
+        font-family: sans-serif;
+        font-size: 10px;
+    }
+</style>
+
+<html>
 <body onload='init()'>
-    <h1 style="font-family:sans-serif;text-align:left">Career Analysis of NBA Players</h1>
-    <svg width=750 height=500>
-    </svg>
+    <h1 style="font-family:sans-serif;text-align:center">Career Analysis of NBA Players</h1>
+    <svg width=1000 height=700></svg>
+    <div id='tooltip'></div>
+
     <script>
     async function init() {
-        const data = await d3.csv("https://shuan102.github.io/players.csv");
+        const data = await d3.csv("https://shuan102.github.io/players-clean.csv");
 
-        var x = d3.scaleLinear().domain([1947,2018]).range([0,650])
-        var y = d3.scaleLinear().domain([10,150]).range([400,0])
+        var x = d3.scaleLinear().domain([1957,2019]).range([0,900])
+        var y = d3.scaleLinear().domain([-1,31]).range([650,0])
         
         var svg = d3.select('svg')
-
-        // var Tooltip = d3.select("#my_dataviz")
-        //     .append("div")
-        //     .style("opacity", 0)
-        //     .attr("class", "tooltip")
-        //     .style("background-color", "white")
-        //     //.style("border", "solid")
-        //     //.style("border-width", "2px")
-        //     .style("border-radius", "5px")
-        //     .style("padding", "5px")
-
-        // // Three function that change the tooltip when user hover / move / leave a cell
-        // var mouseover = function(d) {
-        //     Tooltip
-        //         .style("opacity", 1)
-        // }
-        // var mousemove = function(d) {
-        //     Tooltip
-        //         .html("Pokemon Generation " + d.type + "<br>"+"Attribute Mean: " + d.value)
-        //         .style("left", (d3.mouse(this)[0]+70) + "px")
-        //         .style("top", (d3.mouse(this)[1]) + "px")
-        // }
-        // var mouseleave = function(d) {
-        //     Tooltip
-        //         .style("opacity", 0)
-        // }
+        
+        var div = d3.select('#tooltip')
+            .attr('class', 'tooltip')
+            .style('opacity', 0);
 
         var g = svg.append('g')
-            .attr('transform', 'translate(50,50)')
+            .attr('transform', 'translate(50,0)')
+            
         circle = g.selectAll('circle')
             .data(data)
             .enter()
             .append('circle')
-                .attr('cx', function(d,i) { return +d.draft_year; })
-                .attr('cy', function(d,i) { return +d.career_PTS; })
-                .attr('r', function(d,i) { return 5; })
-                .attr("fill", "white")
-                // .on("mouseover", mouseover)
-                // .on("mousemove", mousemove)
-                // .on("mouseleave", mouseleave)
+                .attr('cx', function(d,i) { return +x(d.draft_year); })
+                .attr('cy', function(d,i) { return +y(d.career_PTS); })
+                .attr('r', function(d,i) { return 3; })
+                .attr('fill', 'black')
+                .on("mouseover", function(d,i) {
+                    div.style('opacity', 0.75)
+                        .style('left', (d3.mouse(this)[0]+60) + 'px')
+                        .style('top', (d3.mouse(this)[1]+10) + 'px')
+                        .html('Player: ' + d.name + '<br>' + 'Position: ' + d.position + '<br>' + 'Draft Year: ' + d.draft_year + '<br>' + 'Career Points: ' + d.career_PTS)
+                })
+                .on("mouseleave", function(d,i) {
+                    div.style('opacity', 0)
+                })
 
         var xaxis = svg.append('g')
-            .attr('transform', 'translate(50,50)')
-            .call(d3.axisLeft(y))
+            .attr('transform', 'translate(50,0)')
+            .call(d3.axisLeft(y).tickFormat(d3.format("d")))
+
+        svg.append('text')             
+            .attr('transform', 'translate(500,690)')
+            .style('text-anchor', 'middle')
+            .style('font-family', 'sans-serif')
+            .style('font-size', '12')
+            .text('Draft Year');
 
         var yaxis = svg.append('g')
-            .attr('transform', 'translate(50,450)')
-            .call(d3.axisBottom(x))
+            .attr('transform', 'translate(50,650)')
+            .call(d3.axisBottom(x).tickFormat(d3.format("d")))
+
+        svg.append('text')  
+            .attr('x', -325)           
+            .attr('y', 15)
+            .attr('transform', 'rotate(-90)')
+            .style('text-anchor', 'middle')
+            .style('font-family', 'sans-serif')
+            .style('font-size', '12')
+            .text('Career Points');
     }
     </script>
 </body>
