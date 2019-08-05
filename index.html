@@ -5,6 +5,7 @@
 <link rel="stylesheet" type="text/css" href="./index.css"></link>
 <title>Narrative Visualization</title>
 </head>
+
 <body onload='init()'>
     <h2 style="font-family:sans-serif; text-align:center; font-size:20px;">Career Statistics of NBA Players in Each Draft Year</h2>
     <p style="font-family:sans-serif; text-align:center; font-size:12px;">How have NBA players' career statistics changed over the years?</p>
@@ -18,8 +19,8 @@
 
     <script>
     
-    const graph_functions = [career_pts, career_ast, career_trb, career_fg, career_fg3, career_ft]
-    const color_functions = ['lightblue', 'lightgreen', 'lightpink', 'khaki', 'sandybrown', 'plum']
+    const graph_functions = [career_avg, career_pts, career_ast, career_trb, career_fg, career_fg3, career_ft]
+    const color_functions = ['', 'lightblue', 'lightgreen', 'lightpink', 'khaki', 'sandybrown', 'plum']
     let data;
     let graph_index = 0;
 
@@ -48,6 +49,121 @@
     function update_svg() {
         document.getElementById('graph_container').innerHTML="<svg width=1000 height=700></svg>";
         graph_functions[graph_index]();
+    }
+
+    function career_avg() {
+        var xScale = d3.scaleLinear().domain([1958,2018]).range([0,900])
+        var yScale = d3.scaleLinear().domain([0,101]).range([650,0])
+        
+        var svg = d3.select('svg')
+
+        var averages = [];
+
+        for (let year = 1958; year < 2019; year++) {
+            let total_cpt = 0.0, total_cast = 0.0, total_crb = 0.0, total_cfg = 0.0, total_cfg3 = 0.0, total_cft = 0.0
+
+            let year_datapoints = data.filter(datapoint => datapoint.draft_year == year);
+            year_datapoints.forEach(function(d) {
+                total_cpt += +d.career_PTS
+                total_cast += +d.career_AST
+                total_crb += +d.career_TRB
+                total_cfg += +d["career_FG%"]
+                total_cfg3 += +d["career_FG3%"]
+                total_cft += +d["career_FT%"]
+            })
+
+            averages.push({
+                "year": year,
+                "cpt": parseFloat(Number(total_cpt / year_datapoints.length).toFixed(1)),
+                "cast": parseFloat(Number(total_cast / year_datapoints.length).toFixed(1)),
+                "crb": parseFloat(Number(total_crb / year_datapoints.length).toFixed(1)),
+                "cfg": parseFloat(Number(total_cfg / year_datapoints.length).toFixed(1)),
+                "cfg3": parseFloat(Number(total_cfg3 / year_datapoints.length).toFixed(1)),
+                "cft": parseFloat(Number(total_cft / year_datapoints.length).toFixed(1))
+            })
+        }
+
+        let colors = {
+            'cpt': 'lightblue', 
+            'cast': 'lightgreen',
+            'crb': 'lightpink',
+            'cfg': 'khaki',
+            'cfg3': 'sandybrown',
+            'cft': 'plum'
+        }
+
+        let texts = {
+            'cpt': ' Points', 
+            'cast': ' Assists',
+            'crb': ' Rebounds',
+            'cfg': ' FG%',
+            'cfg3': ' FG3%',
+            'cft': ' FT%'
+        }
+
+        let div = d3.select('#tooltip')
+            .attr('class', 'tooltip')
+            .style('opacity', 0)
+            
+        Object.keys(colors).forEach(function(type) {
+            let g = svg.append('g')
+                .attr('transform', 'translate(50,0)')
+
+            let line = d3.line()
+                .x(function(d) { return xScale(d.year); })
+                .y(function(d) { return yScale(d[type]); })
+
+            let path = g.append('path')
+                .datum(averages)
+                .attr('class', 'line')
+                .attr('d', line)
+                .style('stroke-width', 2)
+                .style('fill', 'none')
+                .style('stroke', colors[type])
+                
+            let circle = g.selectAll('circle')
+                .data(averages)
+                .enter()
+                .append('circle')
+                    .attr('cx', function(d,i) { return xScale(d.year); })
+                    .attr('cy', function(d,i) { return yScale(d[type]); })
+                    .attr('r', function(d,i) { return 3; })
+                    .attr('fill', colors[type])
+                    .on("mouseover", function(d,i) {
+                        div.style('opacity', 0.9)
+                            .style('left', (d3.mouse(this)[0]+60) + 'px')
+                            .style('top', (d3.mouse(this)[1]+15) + 'px')
+                            .style('background-color', colors[type])
+                            .html('Year: ' + d.year + '<br>' + 'Average ' + texts[type] + ": " + d[type])
+                    })
+                    .on("mouseleave", function(d,i) {
+                        div.style('opacity', 0)
+                    })
+        })
+        
+        var xaxis = svg.append('g')
+            .attr('transform', 'translate(50,0)')
+            .call(d3.axisLeft(yScale).tickFormat(d3.format("d")))
+
+        svg.append('text')             
+            .attr('transform', 'translate(500,690)')
+            .style('text-anchor', 'middle')
+            .style('font-family', 'sans-serif')
+            .style('font-size', '12')
+            .text('Draft Year');
+
+        var yaxis = svg.append('g')
+            .attr('transform', 'translate(50,650)')
+            .call(d3.axisBottom(xScale).tickFormat(d3.format("d")))
+
+        svg.append('text')  
+            .attr('x', -325)           
+            .attr('y', 15)
+            .attr('transform', 'rotate(-90)')
+            .style('text-anchor', 'middle')
+            .style('font-family', 'sans-serif')
+            .style('font-size', '12')
+            .text('Career Averages');
     }
 
     function career_pts() {
