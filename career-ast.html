@@ -30,7 +30,7 @@
         const data = await d3.csv("https://shuan102.github.io/players-clean.csv");
 
         var x = d3.scaleLinear().domain([1957,2019]).range([0,900])
-        var y = d3.scaleLinear().domain([-0.1,12.1]).range([650,0])
+        var y = d3.scaleLinear().domain([-0.1,11.5]).range([650,0])
         
         var svg = d3.select('svg')
         
@@ -50,7 +50,7 @@
                 .attr('r', function(d,i) { return 3; })
                 .attr('fill', 'black')
                 .on("mouseover", function(d,i) {
-                    div.style('opacity', 0.75)
+                    div.style('opacity', 0.9)
                         .style('left', (d3.mouse(this)[0]+60) + 'px')
                         .style('top', (d3.mouse(this)[1]+15) + 'px')
                         .html('Player: ' + d.name + '<br>' + 'Position: ' + d.position + '<br>' + 'Draft Year: ' + d.draft_year + '<br>' + 'Career Assists: ' + d.career_AST)

@@ -4,14 +4,14 @@
 
 <style>
     circle {
-        fill: lightpink;
-        stroke: lightpink;
+        fill: khaki;
+        stroke: khaki;
     }
     
     div.tooltip {
         position: absolute;
         opacity: 0;
-        background-color: lightpink;
+        background-color: khaki;
         border-radius: 3px;
         padding: 5px;
         font-family: sans-serif;
@@ -50,7 +50,7 @@
                 .attr('r', function(d,i) { return 3; })
                 .attr('fill', 'black')
                 .on("mouseover", function(d,i) {
-                    div.style('opacity', 0.75)
+                    div.style('opacity', 0.9)
                         .style('left', (d3.mouse(this)[0]+60) + 'px')
                         .style('top', (d3.mouse(this)[1]+15) + 'px')
                         .html('Player: ' + d.name + '<br>' + 'Position: ' + d.position + '<br>' + 'Draft Year: ' + d.draft_year + '<br>' + 'Career FG%: ' + d["career_FG%"])
