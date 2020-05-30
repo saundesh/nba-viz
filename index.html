@@ -78,7 +78,7 @@
     }
 
     async function init() {
-        data = await d3.csv("https://shuan102.github.io/players-clean.csv");
+        data = await d3.csv("players-clean.csv");
         document.getElementById('back').addEventListener('click', goback)
         document.getElementById('forward').addEventListener('click', goforward)
         document.onkeydown = function(e) {
