@@ -78,7 +78,7 @@
     }
 
     async function init() {
-        data = await d3.csv("https://raw.githubusercontent.com/shirleyhuang93/nba-viz/master/players-clean.csv");
+        data = await d3.csv("https://raw.githubusercontent.com/shirleyhuang93/nba-viz/master/data/players-clean.csv");
         document.getElementById('back').addEventListener('click', goback)
         document.getElementById('forward').addEventListener('click', goforward)
         document.onkeydown = function(e) {
